@@ -1,47 +1,45 @@
-import logging
-
+import requests
 import azure.functions as func
+from blob_connection import write_to_file
+from datetime import date
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
     
-
-   
-    name = req.params.get('name')
     end_point_name = req.params.get('end_point_name')
-    start_time=req.params.get('start_time')
-    end_time=req.params.get('end_time')
+    start_datetime=req.params.get('start_time')
     history_year=req.params.get('history_year')
 
+
     if end_point_name=='crimes_history':
-        url='https://data.cityofchicago.org/resource/ijzp-q8t2.json?$where=year='+history_year
-        container_name=''
-        file_name=''
+        url=url_crimes_hist='https://data.cityofchicago.org/resource/ijzp-q8t2.json?year='+str(history_year)
+        container_name='myfilesystem/Crimes/Crimes_History'
+        file_name='crimes_'+str(date.today())+'.json'
         
     elif end_point_name=='crimes_incr':
-        url='https://data.cityofchicago.org/resource/6zsd-86xi.json?$where=date%20between%20%27'+start_time+'%27%20and%20%27'+end_time+'%27'
+        url='https://data.cityofchicago.org/resource/ijzp-q8t2.json?$where=updated_on >'+"'"+start_datetime+"'"
+        container_name='myfilesystem/Crimes/Crimes_Incremental'
+        file_name='crimes_'+str(history_year)+'.json'
+
     elif end_point_name=='arrests_incr':
-        url='https://data.cityofchicago.org/resource/dpt3-jri9.json?$where=arrest_date%20between%20%27'+start_time+'%27%20and%20%27'+end_time+'%27'
+        url='https://data.cityofchicago.org/resource/dpt3-jri9.json?$where=arrest_date > '+"'"+start_datetime+"'"
+        container_name=' myfilesystem/Arrests/Arrests_Incremental'
+        file_name='arrests_'+str(date.today())+'.json'
+
     else :
         return func.HttpResponse("please enter a vaild type_name")
 
+    try:
+        resp = requests.get(url)
+        write_to_file(container_name,file_name,resp.content)
+    except:
+         return func.HttpResponse("Azure function failed due to API error or Blocb Connection error")
+    else:
+        return func.HttpResponse("File successfully loaded to Blob")
+
+        
+
     
 
 
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
-
-    if name:
-        print('1')
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+    
