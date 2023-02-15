@@ -7,7 +7,7 @@ from datetime import date
 def main(req: func.HttpRequest) -> func.HttpResponse:
     
     end_point_name = req.params.get('end_point_name')
-    start_datetime=req.params.get('start_time')
+    start_datetime=req.params.get('start_datetime')
     history_year=req.params.get('history_year')
 
 
