@@ -2,6 +2,7 @@ import requests
 import azure.functions as func
 from blob_connection import write_to_file
 from datetime import date
+import datetime
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -14,7 +15,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         if end_point_name=='crimes_history':
             url=url_crimes_hist='https://data.cityofchicago.org/resource/ijzp-q8t2.json?year='+str(history_year)
             container_name='myfilesystem/Crimes/Crimes_History'
-            file_name='crimes_'+str(date.today())+'.json'
+            file_name='crimes_'+str(datetime.datetime.now()).replace("-","").replace(" ","_").replace(":","").replace(".","")+'.json'
             
         elif end_point_name=='crimes_incr':
             url='https://data.cityofchicago.org/resource/ijzp-q8t2.json?$where=updated_on >'+"'"+start_datetime+"'"
@@ -24,7 +25,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         elif end_point_name=='arrests_incr':
             url='https://data.cityofchicago.org/resource/dpt3-jri9.json?$where=arrest_date > '+"'"+start_datetime+"'"
             container_name=' myfilesystem/Arrests/Arrests_Incremental'
-            file_name='arrests_'+str(date.today())+'.json'
+            file_name='arrests_'+str(datetime.datetime.now()).replace("-","").replace(" ","_").replace(":","").replace(".","")+'.json'
 
         else :
             return func.HttpResponse("please enter a vaild type_name")
